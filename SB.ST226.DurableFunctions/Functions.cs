@@ -10,6 +10,7 @@ using Newtonsoft.Json;
 using System.Net.Http;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace SB.ST226.DurableFunctions
 {
@@ -22,7 +23,8 @@ namespace SB.ST226.DurableFunctions
             ILogger log)
         {
             // Function input comes from the request content.
-            string instanceId = await starter.StartNewAsync("Orchestration", null);
+            var content = req.Content.ReadAsStringAsync();
+            string instanceId = await starter.StartNewAsync("Orchestration", content);
 
             log.LogInformation($"Started orchestration with ID = '{instanceId}'.");
 
@@ -47,6 +49,7 @@ namespace SB.ST226.DurableFunctions
         [FunctionName("Orchestration_Hello")]
         public static string SayHello([ActivityTrigger] string name, ILogger log)
         {
+            Thread.Sleep(TimeSpan.FromSeconds(5));
             log.LogInformation($"Saying hello to {name}.");
             return $"Hello {name}!";
         }
